@@ -1,0 +1,92 @@
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+public class Title{
+	private boolean play = false;
+	private boolean instruction = false;
+	Rectangle playButton = new Rectangle (850,580,322,83);
+	Rectangle instructionButton = new Rectangle (618,692,808,100);
+	JFrame frame; 
+	
+	public Title (int w, int h, String title) throws IOException{
+		frame = new JFrame (title);
+		frame.setSize(w, h);
+		frame.add(new TitlePanel());
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setResizable(false);
+		frame.setLocationRelativeTo(null);
+		frame.setVisible(true);
+		frame.addMouseListener(new MouseScreen());
+	}
+
+	public boolean isPlay() {
+		return play;
+	}
+
+	public void setPlay(boolean play) {
+		this.play = play;
+	}
+
+	public boolean isInstruction() {
+		return instruction;
+	}
+
+	public void setInstruction(boolean instruction) {
+		this.instruction = instruction;
+	}
+
+	public class MouseScreen extends MouseAdapter{
+		public void mousePressed(MouseEvent event){
+			Point click = event.getPoint();
+			System.out.println(click);
+			if (playButton.contains(click)){
+				setPlay(true);
+				
+			} else if (instructionButton.contains(click)){
+				setInstruction(true);
+				setPlay(false);
+			}
+			
+			if (play==true){
+				frame.dispose();
+			}
+			
+		}
+		
+	}
+	
+	public class TitlePanel extends JPanel {
+		BufferedImage titleScreen;
+		BufferedImage instructionScreen;
+
+		public TitlePanel () throws IOException{
+			titleScreen = ImageIO.read(new File("titlescreenv1.jpg"));
+			instructionScreen = ImageIO.read(new File("instructions.jpg"));
+		}
+
+		public void paintComponent(Graphics g) {
+			super.paintComponent(g);
+			g.drawImage(titleScreen, 0, 0, this);
+			if (instruction){
+				g.drawImage(instructionScreen, 0, 0, this);
+			}
+			Graphics2D g2d = (Graphics2D)g;
+			repaint();
+		}
+	}
+
+}

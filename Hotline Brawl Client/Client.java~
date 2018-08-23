@@ -1,0 +1,152 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class Client {
+  
+  Handler handler;
+  Socket mySocket; //socket for connection
+  BufferedReader input;
+  PrintWriter output;
+  String x,y;
+  String xEnemy, yEnemy;
+  String firing;
+  String facingX,facingY;
+  String facingXEnemy, facingYEnemy;
+  String xBulletNew="";
+  String yBulletNew="";
+  String bulletType="";
+  String xBulletEnemy="";
+  String yBulletEnemy="";
+  String xBulletNewEnemy="";
+  String yBulletNewEnemy="";
+  String bulletTypeEnemy="";
+  boolean enemyFiring;
+  
+  public Client (Handler handler){
+    this.handler=handler;
+  }
+  
+  public void transmit() {
+    
+    for (int i=0;i<handler.object.size();i++){
+      GameObject tempObject = handler.object.get(i);
+      if (tempObject.getType().equals("Player")){
+        x = Float.toString(((Pikachu)tempObject).getX());
+        y = Float.toString(((Pikachu)tempObject).getY());
+        firing=Boolean.toString(((Pikachu)tempObject).isFiring());
+        facingX=Integer.toString(((Pikachu)tempObject).getFacingX());
+        facingY=Integer.toString(((Pikachu)tempObject).getFacingY());
+      } else if (tempObject.getType().equals("Bullet")){
+        if (((Bullet)tempObject).getId() instanceof Pikachu){
+          //xBullet=Double.toString(((Bullet)tempObject).getX()); 
+          // yBullet=Double.toString(((Bullet)tempObject).getY());
+          xBulletNew = Double.toString ((((Bullet)tempObject).getXNew())); 
+          yBulletNew = Double.toString ((((Bullet)tempObject).getYNew())); 
+          bulletType=Integer.toString(((Bullet)tempObject).getGunType());
+          //Send information to the client 
+         // System.out.println("Bullet coordinates: " + xBulletNew + " " + yBulletNew);
+          //System.out.println("Bullet type: " + bulletType);
+        //  System.out.println("Bullet current: " + xBullet + " " + yBullet);
+       }
+     }
+  }
+  
+    //accept a message from the server and output to console
+    
+    try {   
+      xEnemy = input.readLine();
+      yEnemy = input.readLine();
+      //  xBulletEnemy = input.readLine();
+      //  yBulletEnemy = input.readLine();
+      enemyFiring=Boolean.parseBoolean(input.readLine());
+      xBulletNewEnemy = input.readLine();
+      yBulletNewEnemy = input.readLine();
+      bulletTypeEnemy = input.readLine();
+      facingXEnemy = input.readLine();
+      facingYEnemy = input.readLine();
+    }catch (IOException e) { 
+      System.out.println("Failed to receive msg from the server");
+      e.printStackTrace();
+    }
+    
+    for (int i=0;i<handler.object.size();i++){
+      GameObject tempObject = handler.object.get(i);
+      if (tempObject.getType().equals("Enemy")){
+        ((Enemy)tempObject).setX((Float.valueOf(xEnemy)));
+        ((Enemy)tempObject).setY((Float.valueOf(yEnemy)));
+        ((Enemy)tempObject).setFacingX(Integer.parseInt(facingXEnemy));
+        ((Enemy)tempObject).setFacingY(Integer.parseInt(facingYEnemy));
+       ((Enemy)tempObject).setFiring(enemyFiring);
+       if (enemyFiring){
+         ((Enemy)tempObject).setxNew(Double.parseDouble(xBulletNewEnemy));
+         ((Enemy)tempObject).setyNew(Double.parseDouble(yBulletNewEnemy));
+         ((Enemy)tempObject).setGunType(Integer.parseInt(bulletTypeEnemy));
+       }
+     }
+   }
+   
+   
+    // transmit a message to the server
+    output.println(x);
+    output.flush();
+    output.println(y);
+    output.flush();
+    output.println(firing);
+    output.flush();
+    //output.println(xBullet);
+   // output.flush();
+    //output.println(yBullet);
+    //output.flush();
+    output.println(xBulletNew);
+    output.flush();
+    output.println(yBulletNew);
+    output.flush();
+    output.println(bulletType);
+    output.flush();
+    output.println(facingX);
+    output.flush();
+    output.println(facingY);
+    output.flush();
+    
+
+ }
+ 
+ public void close(){
+   try {
+     input.close();
+     output.close();
+     mySocket.close();
+   }catch (Exception e) { 
+     System.out.println("Failed to close socket");
+   }
+ }
+ 
+ public void go(){
+  System.out.println("Attempting to make connection...");
+
+  try{
+   mySocket = new Socket ("127.0.0.1",5000);
+   InputStreamReader stream = new InputStreamReader(mySocket.getInputStream());
+   input = new BufferedReader(stream);
+   output = new PrintWriter(mySocket.getOutputStream());
+
+  } catch (IOException e){
+   System.out.println("Connection to Server Failed");
+   e.printStackTrace();
+  }
+
+  System.out.println("Connection made.");
+
+  // transmit a message to the server
+  transmit();
+  
+ 
+ }
+ 
+}
+
+
