@@ -1,0 +1,230 @@
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
+import java.util.LinkedList;
+
+public class Pikachu extends GameObject{
+ private int width = 64;
+ private int height = 64;
+ Handler handler;
+ private boolean firing = false; 
+ private double xNew,yNew;
+ private int kills=0; 
+ private int health = 100;
+ private boolean alive = true; 
+ private int gunType=1;
+ private boolean win = false;
+ 
+ 
+ private int facingX = 1;
+ //1 = right
+ //-1 = left
+ private int facingY = 1;
+ //1 = up
+ //-1 = down
+ 
+ 
+ Texture tex = Game.getInstance();
+ 
+ private Animation playerWalk, playerWalkLeft, playerWalkUp, playerWalkDown;
+ 
+ 
+ public Pikachu(float x, float y,Handler handler, String type) {
+  super(x, y, type);
+  this.handler=handler;
+  
+  playerWalk = new Animation(8, tex.player[6], tex.player[7]);
+  playerWalkLeft = new Animation(8, tex.player[4], tex.player[5]);
+  playerWalkUp = new Animation(8, tex.player[2], tex.player[3]);
+  playerWalkDown = new Animation(8, tex.player[0], tex.player[1]);
+ }
+ 
+ public void tick(LinkedList<GameObject> object) {
+  x+=velX;
+  y+=velY;
+  
+  if(velX < 0){
+   facingX = 1;
+  }
+  else{
+   facingX = -1;
+  }
+  
+  if(velY < 0){
+   facingY = 1;
+  }
+  else{
+   facingY = -1;
+  }
+  
+  collision(object);
+  
+  playerWalk.runAnimation();
+  playerWalkLeft.runAnimation();
+  playerWalkUp.runAnimation();
+  playerWalkDown.runAnimation();
+  
+  setGunType(kills+1);
+  if (gunType==6){
+   setWin(true);
+  }
+  
+ }
+ 
+ private void collision(LinkedList <GameObject> object){
+  for (int i=0;i<handler.object.size();i++){
+   GameObject tempObject = handler.object.get(i);
+   if (tempObject.getType().equals("Wall")){
+    if (getBounds().intersects(tempObject.getBounds())){
+     velY=0;
+     y = tempObject.getY() -45;
+    } else if (getBoundsTop().intersects(tempObject.getBounds())){
+     velY=0;
+     y = tempObject.getY() + 50;
+    } else if (getBoundsRight().intersects(tempObject.getBounds())){
+     x = tempObject.getX() - 50;
+     velX=0;
+    } else if (getBoundsLeft().intersects(tempObject.getBounds())){
+      x = tempObject.getX() + 41;
+      velX=0;
+    }
+   } else if (tempObject.getType().equals("Bullet")){
+    if (getBounds().intersects(tempObject.getBounds())){
+     if (((Bullet)tempObject).isHitPlayer() && ((Bullet)tempObject).getId() instanceof Enemy && alive==true){
+      health = health - ((Bullet)tempObject).getDamage();
+      ((Bullet)tempObject).setRemove(true);
+      System.out.println(health);
+      if (health <=0){
+       setAlive(false);
+       ((Enemy)((Bullet)tempObject).getId()).setKills(((Enemy)((Bullet)tempObject).getId()).getKills()+1);
+      }
+     }
+    }
+   }
+  }
+ }
+
+ public void render(Graphics g) {
+  if(velX != 0){
+   if(facingX == 1){
+    playerWalkLeft.drawAnimation(g, (int)x, (int)y, 75,64);
+   }
+   else{
+    playerWalk.drawAnimation(g, (int)x, (int)y, 75,64);
+   }
+  }
+  else if(velY != 0){
+   if(facingY == 1){
+    playerWalkUp.drawAnimation(g, (int)x, (int)y, 75,64);
+   }
+   else{
+    playerWalkDown.drawAnimation(g, (int)x, (int)y, 75,64);
+   }
+  }
+  else{
+  
+   g.drawImage(tex.player[0],(int)x,(int)y,null);
+
+  }
+  
+ }
+
+ public Rectangle getBounds() {
+  return new Rectangle((int)x+(width/2)-((width/2)/2)+12,(int)y+(height/2),width/2-15,height/2-17);
+ }
+ 
+ public Rectangle getBoundsTop() {
+  return new Rectangle((int)x+(width/2)-((width/2)/2)+12,(int)y+15,width/2-15,height/2-17);
+ }
+ 
+ public Rectangle getBoundsRight() {
+  return new Rectangle((int)x+width-17,(int)y+17,3,height-36);
+ }
+ 
+ public Rectangle getBoundsLeft() {
+  return new Rectangle((int)x+23,(int)y+17,3,height-36);
+ }
+
+ public boolean isFiring() {
+  return firing;
+ }
+
+ public void setFiring(boolean firing) {
+  this.firing = firing;
+ }
+
+ public double getxNew() {
+  return xNew;
+ }
+
+ public void setxNew(double xNew) {
+  this.xNew = xNew;
+ }
+
+ public double getyNew() {
+  return yNew;
+ }
+
+ public void setyNew(double yNew) {
+  this.yNew = yNew;
+ }
+
+ public int getKills() {
+  return kills;
+ }
+
+ public void setKills(int kills) {
+  this.kills = kills;
+ }
+
+ public int getHealth() {
+  return health;
+ }
+
+ public void setHealth(int health) {
+  this.health = health;
+ }
+
+ public boolean isAlive() {
+  return alive;
+ }
+
+ public void setAlive(boolean alive) {
+  this.alive = alive;
+ }
+
+ public int getGunType() {
+  return gunType;
+ }
+
+ public void setGunType(int gunType) {
+  this.gunType = gunType;
+ }
+
+ public boolean isWin() {
+  return win;
+ }
+
+ public void setWin(boolean win) {
+  this.win = win;
+ }
+
+  public int getFacingX(){
+   return facingX;
+ }
+ 
+ public void setFacingX(int facingX){
+   this.facingX=facingX;
+ }
+ 
+ public int getFacingY(){
+   return facingY;
+ }
+ 
+ public void setFacingY(int facingY){
+   this.facingY=facingY;
+ }
+
+}

@@ -1,0 +1,173 @@
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.geom.Line2D;
+import java.util.LinkedList;
+
+public class Bullet extends GameObject{
+ Handler handler;
+ double xNew, yNew;
+ float xOrignal,yOrignal;
+ double angle;
+ int speed;
+ int width = 5;
+ int height = 5; 
+ private boolean remove = false; 
+ private int gunType;
+ private boolean hitPlayer = false;
+ private int damage;
+ private GameObject id;
+ private int range;
+ 
+ public Bullet(float x, float y, double xNew, double yNew, int speed, int damage, int range, Handler handler, String type, int gunType,GameObject id) {
+  super(x, y, type);
+  this.xOrignal=x;
+  this.yOrignal=y;
+  this.yNew=yNew;
+  this.xNew=xNew;
+  this.handler=handler;
+  this.speed=speed;
+  this.gunType=gunType;
+  this.setId(id);
+  this.setDamage(damage);
+  this.setRange(range);
+  
+  angle = Math.atan2(yNew-300, xNew-400); 
+  velX = (float) (Math.cos(angle)*speed);
+  velY = (float) (Math.sin(angle)*speed);
+ }
+ 
+ private void collision (LinkedList <GameObject> object){
+   for (int i=0;i<handler.object.size();i++){
+     GameObject tempObject = handler.object.get(i);
+     if (tempObject.getType().equals("Wall")){
+       if (getBounds().intersects(tempObject.getBounds())){
+         setRemove(true); 
+       }
+     } else if (tempObject.getType().equals("Enemy")){
+       if (id instanceof Pikachu){
+         if (getBounds().intersects(tempObject.getBounds())){
+           setHitPlayer(true);
+         }
+       }
+     }else if (tempObject.getType().equals("Player")){
+       if (id instanceof Enemy){
+         if (getBounds().intersects(tempObject.getBounds())){
+           setHitPlayer(true);
+         }
+       }
+     }
+   }
+ }
+ 
+ public void tick(LinkedList<GameObject> object) {
+   x+=velX;
+   y+=velY;
+   
+   double distance = Math.sqrt(Math.pow((x-xOrignal), 2) + Math.pow((y-yOrignal), 2));
+   if (distance>range){
+     setRemove(true);
+   }
+   
+  collision(object);
+ }
+ 
+ public void render(Graphics g) {
+  Graphics2D g2d = (Graphics2D)g;
+  g.setColor(Color.black);
+  if (gunType==1){
+  g.fillOval((int)x, (int)y, width, height);
+  } else if (gunType==2){
+    width=7;
+    height=7;
+   g.fillOval((int)x, (int)y, width, height);
+  } else if (gunType==3){
+    width=5;
+    height=5;
+    g.fillOval((int)x, (int)y, width, height);
+  } else if (gunType==4){
+    width=20;
+    height=20;
+    g.fillOval((int)x, (int)y, width, height);
+  }else if (gunType==5){
+    width=10;
+    height=5;
+    g.fillOval((int)x, (int)y, width, height);
+  }else if (gunType==6){
+    width=10;
+    height=10;
+    g.fillOval((int)x, (int)y, width, height);
+  }
+  g.setColor(Color.blue);
+  g2d.draw(getBounds());
+ }
+
+ public Rectangle getBounds() {
+  return new Rectangle ((int)x,(int)y,width,height);
+ }
+ public boolean isRemove() {
+  return remove;
+ }
+ public void setRemove(boolean remove) {
+  this.remove = remove;
+ }
+
+ public boolean isHitPlayer() {
+  return hitPlayer;
+ }
+
+ public void setHitPlayer(boolean hitPlayer) {
+  this.hitPlayer = hitPlayer;
+ }
+
+ public int getDamage() {
+  return damage;
+ }
+
+ public void setDamage(int damage) {
+  this.damage = damage;
+ }
+
+ public GameObject getId() {
+  return id;
+ }
+
+ public void setId(GameObject id) {
+  this.id = id;
+ }
+ 
+ public double getXNew(){
+   return xNew;
+ }
+ 
+ public void setXNew(double xNew){
+   this.xNew=xNew;
+ }
+ 
+ public double getYNew(){
+   return yNew;
+ }
+ 
+ public void setYNew(double yNew){
+   this.yNew=yNew;
+ }
+ 
+public int getGunType(){
+   return gunType;
+ }
+ 
+ public void setGunType(int type){
+   gunType=type;
+ }
+ 
+ public int getRange(){
+   return range;
+ }
+ 
+ public void setRange(int range){
+   this.range=range;
+ }
+}
+
